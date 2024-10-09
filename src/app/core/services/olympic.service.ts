@@ -1,31 +1,56 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { BehaviorSubject } from 'rxjs';
-import { catchError, tap } from 'rxjs/operators';
+import { BehaviorSubject, Observable, throwError } from 'rxjs';
+import { catchError, retry, tap } from 'rxjs/operators';
+import { Olympic } from '../models/Olympic';
 
 @Injectable({
   providedIn: 'root',
 })
 export class OlympicService {
   private olympicUrl = './assets/mock/olympic.json';
-  private olympics$ = new BehaviorSubject<any>(undefined);
+  private olympics$ = new BehaviorSubject<Olympic[]>([]);
 
   constructor(private http: HttpClient) {}
 
-  loadInitialData() {
-    return this.http.get<any>(this.olympicUrl).pipe(
+  loadInitialData(): Observable<Olympic[]> {
+    return this.http.get<Olympic[]>(this.olympicUrl).pipe(
+      retry(2),
       tap((value) => this.olympics$.next(value)),
-      catchError((error, caught) => {
-        // TODO: improve error handling
-        console.error(error);
-        // can be useful to end loading state and let the user know something went wrong
-        this.olympics$.next(null);
-        return caught;
-      })
+      catchError((e : HttpErrorResponse) => this.handleError(e)
+      )
     );
   }
 
-  getOlympics() {
+  getOlympics(): Observable<Olympic[]> {
     return this.olympics$.asObservable();
   }
+  // Centralized error handling function
+  private handleError(e: HttpErrorResponse): Observable<never> 
+  {
+    let userFriendlyMessage = 'An unknown error occurred. Please try again later.';
+    
+    if (e.error instanceof ErrorEvent) {
+      // A client-side or network error occurred
+      console.error('A client-side error occurred:', e.error.message);
+      userFriendlyMessage = 'There seems to be a problem with your network connection.';
+    } else {
+      // Backend or server-side error
+      console.error(`Backend returned code ${e.status}, body was:`, e.error);
+      if (e.status === 404) {
+        userFriendlyMessage = 'The requested resource was not found.';
+      } else if (e.status === 500) {
+        userFriendlyMessage = 'The server encountered an error. Please try again later.';
+      }
+    }
+    // Update the BehaviorSubject to reflect the empty state
+    this.olympics$.next([]);
+
+    // Display the error message to the user
+    alert(userFriendlyMessage);
+
+    // Return an observable with a user-facing error message
+    return throwError(() => new Error(userFriendlyMessage));
+  }
 }
+
