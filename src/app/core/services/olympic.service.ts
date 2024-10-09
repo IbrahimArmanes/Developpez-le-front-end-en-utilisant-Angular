@@ -52,5 +52,15 @@ export class OlympicService {
     // Return an observable with a user-facing error message
     return throwError(() => new Error(userFriendlyMessage));
   }
-}
 
+
+
+  getCountriesAndMedals(): { countries: string[], medalCounts: number[] } {
+    const olympics = this.olympics$.getValue();
+    const countries = olympics.map(olympic => olympic.country);
+    const medalCounts = olympics.map(olympic => 
+      olympic.participations.reduce((sum, participation) => sum + participation.medalsCount, 0)
+    );
+    return { countries, medalCounts };
+  }
+}
