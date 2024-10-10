@@ -1,7 +1,7 @@
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, throwError } from 'rxjs';
-import { catchError, retry, tap } from 'rxjs/operators';
+import { catchError, map, retry, tap } from 'rxjs/operators';
 import { Olympic } from '../models/Olympic';
 
 @Injectable({
@@ -53,14 +53,30 @@ export class OlympicService {
     return throwError(() => new Error(userFriendlyMessage));
   }
 
+@Injectable({
+  providedIn: 'root',
+})
 
-
-  getCountriesAndMedals(): { countries: string[], medalCounts: number[] } {
-    const olympics = this.olympics$.getValue();
-    const countries = olympics.map(olympic => olympic.country);
-    const medalCounts = olympics.map(olympic => 
-      olympic.participations.reduce((sum, participation) => sum + participation.medalsCount, 0)
+  getPieChartData(): Observable<{ countries: string[], medalCounts: number[], numberOfCountries: number, numberOfJOs: number }> {
+    return this.olympics$.pipe(
+      map(olympics => {
+        const countries = olympics.map(olympic => olympic.country);
+        const medalCounts = olympics.map(olympic => 
+          olympic.participations.reduce((sum, participation) => sum + participation.medalsCount, 0)
+        );
+        const numberOfCountries = countries.length;
+        const numberOfJOs = Math.max(...olympics.map(olympic => olympic.participations.length));
+        return { countries, medalCounts, numberOfCountries, numberOfJOs };
+      })
     );
-    return { countries, medalCounts };
   }
+
+  // getCountriesAndMedals(): { countries: string[], medalCounts: number[] } {
+  //   const olympics = this.olympics$.getValue();
+  //   const countries = olympics.map(olympic => olympic.country);
+  //   const medalCounts = olympics.map(olympic => 
+  //     olympic.participations.reduce((sum, participation) => sum + participation.medalsCount, 0)
+  //   );
+  //   return { countries, medalCounts };
+  // }
 }

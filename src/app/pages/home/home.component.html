@@ -1,45 +1,55 @@
-<style>
-    table, th, td {
-      border:1px solid black;
-    }
-</style>
-<h2>Olympic Games App</h2>
-<hr />
+
 <p>{{ (olympics$ | async)?.length }} data loaded</p>
-
-<div *ngIf="(olympics$ | async) as olympics; else loading"> <!-- pourquoi on a besoin de cette ligne ??-->
-  <div style="position: relative; width: 100%; max-width: 900px; margin: auto;">
-    <canvas baseChart 
-      [data]="pieChartData"
-      [options]="pieChartOptions"
-      [type]="'pie'">
-    </canvas>
-  </div> 
-
-  <div *ngFor="let olympic of olympics">
-    <h3>Pays: {{ olympic.country }}</h3>
-    <p>Participations: </p>
-    <div *ngFor="let participation of olympic.participations">
-        <div>
-            <table>
-                    <tr>
-                        <th>Year</th>
-                        <th>City</th>
-                        <th>medalsCount</th>
-                        <th>athleteCount</th>
-                    </tr>
-                    <tr>
-                        <td>{{participation.year}}</td>
-                        <td>{{participation.city}}</td>
-                        <td>{{participation.medalsCount}}</td>
-                        <td>{{participation.athleteCount}}</td>
-                    </tr>
-            </table>    
-        </div>
-        
-    </div>
+<div class="container">
+  <div class="title-box">
+    <h3>Medals per Country</h3>
   </div>
+  <div class="info">
+    <div class="info-box">
+      <p>Number of JOs: {{ numberOfJOs }}</p>
+    </div>
+  
+    <div class="info-box">
+      <p>Number of countries: {{ numberOfCountries }}</p>
+    </div>  
+  </div>
+
+  <div *ngIf="(olympics$ | async) as olympics; else loading" class="chart"> <!-- pourquoi on a besoin de cette ligne ??-->
+      <canvas baseChart 
+        [data]="pieChartData"
+        [options]="pieChartOptions"
+        [type]="'pie'"
+        class="chart-pie">
+      </canvas>
+  
+    <!-- <div *ngFor="let olympic of olympics">
+      <h3>Pays: {{ olympic.country }}</h3>
+      <p>Participations: </p>
+      <div *ngFor="let participation of olympic.participations">
+        <div>
+          <table>
+            <tr>
+              <th>Year</th>
+              <th>City</th>
+              <th>medalsCount</th>
+              <th>athleteCount</th>
+            </tr>
+            <tr>
+              <td>{{ participation.year }}</td>
+              <td>{{ participation.city }}</td>
+              <td>{{ participation.medalsCount }}</td>
+              <td>{{ participation.athleteCount }}</td>
+            </tr>
+          </table>    
+        </div>
+      </div>
+    </div> -->
+  </div>
+
 </div>
+
+
+
 
 <ng-template #loading>
   <p>Loading data...</p>

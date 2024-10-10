@@ -1,0 +1,47 @@
+<div class="return-button">
+  <button routerLink="/" class="btn-return">Return to Home</button>
+</div>
+  <div *ngIf="olympicData">
+    
+    <div class="container">
+      <div class="title-box">
+        <h1>{{ getOlympicData().olympicData.country }} Olympic Performance</h1>
+      </div>
+      <div class="info">
+        <div class="info-box">
+          <p>Number of entries: {{ getOlympicData().olympicData.participations.length }}</p>
+        </div>
+      
+        <div class="info-box">
+          <p>Total number of medals: {{ getOlympicData().totalMedals }}</p>
+        </div>  
+
+        <div class="info-box">
+          <p>Total number of athletes: {{ getOlympicData().totalAthletes }}</p>
+        </div> 
+      </div>
+    <div class="chart">
+      <canvas baseChart 
+        [data]="lineChartData"
+        [options]="lineChartOptions"
+        [type]="'line'"
+        class="chart-pie">
+      </canvas>  
+
+    </div>
+      <!-- <div *ngIf="(olympics$ | async) as olympics; else loading" class="chart">
+          <canvas baseChart 
+            [data]="lineChartData"
+            [options]="pieChartOptions"
+            [type]="'pie'"
+            class="chart-pie">
+          </canvas>
+    
+      </div> -->
+    
+    </div>
+    
+
+  <div *ngIf="!olympicData">
+    <p>Loading data... If this persists, the country may not be found.</p>
+  </div>
