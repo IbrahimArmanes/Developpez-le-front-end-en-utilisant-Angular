@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Observable, Subscription, switchMap, tap } from 'rxjs';
 import { OlympicService } from 'src/app/core/services/olympic.service';
@@ -10,9 +10,10 @@ import { ChartConfiguration } from 'chart.js';
   templateUrl: './detail.component.html',
   styleUrls: ['./detail.component.scss']
 })
-export class DetailComponent implements OnInit {
+export class DetailComponent implements OnInit, OnDestroy {
   public country: string;
   public olympicData: Olympic | undefined;
+  private subscription: Subscription = new Subscription();
 
   public lineChartData: ChartConfiguration['data'] = {
     datasets: [{ data: [] }],
@@ -47,12 +48,18 @@ export class DetailComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.olympicService.getOlympics().subscribe(olympics => {
-      this.olympicData = olympics.find(olympic => olympic.country === this.country);
-      if (this.olympicData) {
-        this.updateChartData();
-      }
-    });
+    this.subscription.add(
+      this.olympicService.getOlympics().subscribe(olympics => {
+        this.olympicData = olympics.find(olympic => olympic.country === this.country);
+        if (this.olympicData) {
+          this.updateChartData();
+        }
+      })
+    );
+  }
+
+  ngOnDestroy(): void {
+    this.subscription.unsubscribe();
   }
 
   private updateChartData(): void {
@@ -60,7 +67,7 @@ export class DetailComponent implements OnInit {
       // Calculate the minimum y-value for the chart
       const medalCounts = this.olympicData.participations.map(p => p.medalsCount);
       const minMedals = Math.min(...medalCounts);
-      const minY = Math.floor(minMedals / 1.1);
+      const minY = Math.floor(minMedals / 1.2);
 
       // Update the chart data
       this.lineChartData.labels = this.olympicData.participations.map(p => p.year.toString());
